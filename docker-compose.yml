@@ -1,0 +1,40 @@
+version: "2"
+
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_DB: ups_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  front-end:
+    build: ./Django-App/web-app
+    command: bash -c "python3 manage.py makemigrations upsApp && python3 manage.py migrate && python3 manage.py runserver 0.0.0.0:7999"
+    volumes:
+      - "./Django-App/web-app:/serverDir"
+    ports:
+      - "7999:7999"
+    depends_on:
+      - db
+    links:
+      - db
+  backend:
+    build: ./Server-App/server
+    command: bash -c "make clean && make && ./server" # backend
+    volumes:
+      - "./Server-App/server:/serverDir"
+    depends_on:
+      - front-end
+    links:
+      - db
+      - front-end
+    ports:
+      - "44444"
+      - "44444:44444"
+    expose:
+      - "44444"
+volumes:
+  pgdata: 
+

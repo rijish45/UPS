@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+<link rel="stylesheet" type="text/css" href="app.css">
+{% block content %}
+  <h1 style="text-align:center;">List of Packages</h1>
+  {% if package_list %}
+  <ul>
+    {% for package in package_list %}
+      <div class ="list" style="color:blue";>
+      <li> Package ID: <strong>{{ package.packageId }}</strong> </li>
+      <li> Package Detail: <strong>{{ package.item }}</strong> </li>
+      <li> Status: <strong>{{ package.get_status_display }}</strong> </li>
+      <li> Destination: <strong>({{ package.xPosition }},{{package.yPosition}})</strong></li>
+      <br/>
+      </div> 
+    {% endfor %}
+  </ul>
+  {% else %}
+    <p class ="list" style="color:blue; margin-left:10px;" >The UPS website currently doesn't have any package. Make sure an order was placed to Amazon. </p>
+  {% endif %}       
+{% endblock %}

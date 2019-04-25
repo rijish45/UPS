@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+<link rel="stylesheet" type="text/css" href="app.css">
+{% block content %}
+  <h1 style="text-align:center;">My Packages</h1>
+  {% if package_list %}
+  <ul class="list">
+    {% for package in package_list %}
+    <div style="color:blue";>
+      <li> Package ID: <strong>{{ package.packageId }}</strong> </li>
+      <li> Package Detail: <strong>{{ package.item }}</strong> </li>
+      <li> Status: <strong>{{ package.get_status_display }}</strong> </li>
+      <li> Destination: <strong>({{ package.xPosition }},{{package.yPosition}})</strong></li>
+      {% if package.get_status_display != 'delivering' %}
+        <li><a href="/upsApp/{{ package.packageId }}/update">Update destination</a></li>
+      {% else %}
+        <li> Out for Delivery</li>
+      {% endif %}
+      <br>
+      </div> 
+    {% endfor %}
+  </ul>
+
+  {% else %}
+    <p class = "list" style ="color:blue; margin-left:10px;">You do not have packages right now.</p>
+  {% endif %}       
+{% endblock %}

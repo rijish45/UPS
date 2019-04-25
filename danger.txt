@@ -1,0 +1,13 @@
+(1) Amazon server might be down or behave incorrectly
+(2) World server might be down or behave incorrectly
+(3) Exceptions might occur for some untested corner-case
+(4) Connection may be refused by Amazon
+(5) Database connection might be refused. Duplicate transactions might happen if we reconnect.
+(6) Incorrect synchronization between amazon and ups
+(7) Incorrect protocol implementation and miscommunication between the servers
+(8) Race conditions and dead-locks might occur
+(9) DoS attack might affect both servers
+(10) We have a few warnings when docker gets built and composed
+
+
+

@@ -1,0 +1,122 @@
+<!-- templates/base.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+  body {
+    background: url(https://images.unsplash.com/photo-1528029320621-f02197f47774?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=675&q=80);
+    background-size: cover;
+    background-position: center; 
+}
+
+body,
+html {
+    width: 100%;
+    height: 100%;
+    font-family: "Lato";
+    color: white;
+}
+
+h1 {
+  font-weight: 700;
+  font-size: 5em;
+}
+
+.list{
+
+font-weight:500;
+font-size:20px;
+font-color:black;
+
+
+}
+
+.content{
+    padding-top: 25%;
+    text-align: center;
+    text-shadow: 0px 4px 3px rgba(0,0,0,0.4),
+                 0px 8px 13px rgba(0,0,0,0.1),
+                 0px 18px 23px rgba(0,0,0,0.1);
+}
+
+hr {
+    width: 400px;
+    border-top: 1px solid #f8f8f8;
+    border-bottom: 1px solid rgba(0,0,0,0.2);
+}
+
+#jumbo
+{
+
+  text-align: center;
+  font-family: "Roboto Mono", monospace;
+  margin: 160px auto;
+  border: 1px solid darkblue;
+  border-radius: 1%;
+  padding: 5% 15%;
+  line-height: 1.4;
+  box-shadow: 5px 5px 5px;
+
+}
+
+  </style>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+
+  <nav class="navbar navbar-default">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav">
+        {% if user.is_authenticated %}
+        <li><a href="{% url 'logout' %}">Sign Out</a></li>
+        <li><a href="{% url 'upsApp:packages' %}">My Packages</a></li>
+        <li><a href="/shipment">Packages</a></li>
+        {% else %}
+        <li><a href="{% url 'login' %}">Sign In</a></li>
+        <li><a href="{% url 'accounts:signup'%}">Sign Up</a></li> 
+        {% endif %}
+      </ul>
+      <form class="navbar-form navbar-left "action="{% url 'upsApp:shipment_search_list_view' %}" method="get" accept-charset="utf-8">
+        <div class="form-group">
+          <input class="searchfield" id="searchbox" name="q" type="text" placeholder="Search Package">
+        </div>
+        <button type="submit" class="btn btn-default">Submit</button>
+      </form>
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>
+  <title>{% block title %}Mini-UPS{% endblock %}</title>
+</head>
+<body>
+  <main>
+  	<!-- {% if user.is_authenticated %} -->
+   <!--  	Hi {{ user.username }}!
+      <p><a href="{% url 'upsApp:packages' %}">My Packages</a></p>
+    	<p><a href="{% url 'logout' %}">logout</a></p>
+  	{% else %}
+  		<a href="{% url 'login' %}">login</a>
+	  {% endif %} -->
+    <!-- <p><a href="{% url 'upsApp:shipment' %}">All Shipment</a></p> -->
+    <!-- <form id="searchform" action="{% url 'upsApp:shipment_search_list_view' %}" method="get" accept-charset="utf-8">
+      <button class="searchbutton" type="submit">
+        <i class="fa fa-search"></i>
+      </button>
+      <input class="searchfield" id="searchbox" name="q" type="text" placeholder="Search">
+    </form> -->
+    {% block content %}
+    {% endblock %}
+  </main>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
+</body>
+</html>
