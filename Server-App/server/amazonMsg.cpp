@@ -43,10 +43,12 @@ bool amazonMsg::buildConnection(int worldid) {
   uconnect.set_worldid(worldid);
   sendMesgTo(uconnect, out);
   U2AConnected response;
+  cout << "DEBUG CONNECTION" << endl;
   recvMesgFrom(response, in);
   cout << "Message is " << endl;
-  cout << response.DebugString();
+  // cout << response.DebugString();
   if (response.result() == "connected!") {
+    cout << response.result() << endl;
     return true;
   }
   return false;

@@ -4,11 +4,10 @@
 using namespace std;
 using namespace pqxx;
 
-
-
+mutex c_mutex;
                                                                                                               
 void get_parameter_based_on_dest(connection * C, vector< vector<string> > & my_vec){
-
+  lock_guard<mutex> lock(c_mutex);
   work W(*C);
   bool val = true;
   string sql = "SELECT \"packageId\", \"xPosition\", \"yPosition\" FROM \"upsApp_package\" WHERE \"destRequiredUpdated\" = "  + W.quote(val) + " ;";
@@ -40,6 +39,7 @@ W.commit();
 
 
 string get_owner_id_from_username(connection * C, string username){
+  // lock_guard<mutex> lock(c_mutex);
   work W(*C);
   string sql = "SELECT id FROM auth_user  WHERE username  = " + W.quote(username) + " ;";
   result R = W.exec(sql);
@@ -52,7 +52,7 @@ string get_owner_id_from_username(connection * C, string username){
 
 
 int max_sequence_num(connection * C){
-
+  lock_guard<mutex> lock(c_mutex);
   work W(*C);
   string sql = "SELECT sequence_id FROM \"upsApp_sequence_number\" ORDER BY sequence_id DESC;";
   result R = W.exec(sql);
@@ -69,7 +69,7 @@ int max_sequence_num(connection * C){
 }
 
 int max_package_num(connection * C){
-
+  lock_guard<mutex> lock(c_mutex);
   work W(*C);
   string sql = "SELECT \"packageId\" FROM \"upsApp_package\" ORDER BY \"packageId\" DESC;";
   result R = W.exec(sql);
@@ -87,7 +87,7 @@ int max_package_num(connection * C){
 
 
 int max_order_id(connection * C){
-
+  lock_guard<mutex> lock(c_mutex);
   work W(*C);
   string sql = "SELECT order_id FROM \"upsApp_order_table\" ORDER BY order_id DESC;";
   result R = W.exec(sql);
@@ -106,7 +106,7 @@ int max_order_id(connection * C){
 
 
 void drop_all_tables(connection * C){
-
+  lock_guard<mutex> lock(c_mutex);
   work W(*C);
   string sql =  "DROP TABLE IF EXISTS \"upsApp_sequence_number\", \"upsApp_order_table\",  \"upsApp_current_world\", \"upsApp_truck\", \"upsApp_package\" ;";
   W.exec(sql);
@@ -115,11 +115,11 @@ void drop_all_tables(connection * C){
 
 
 void packed_packages(connection * C, vector<int> & package_vec, string whx_position, string why_position, string truck_id){
+  lock_guard<mutex> lock(c_mutex);
   work W(*C);
   string packed = "PD";
   string sql = "SELECT \"packageId\" FROM \"upsApp_package\" WHERE \"whxPosition\" = " + W.quote(whx_position) + " AND \"whyPosition\" = " + W.quote(why_position) + " AND status = " + W.quote(packed) +  " AND \"truck_id\" = " + W.quote(truck_id) + " ORDER BY \"packageId\" ASC ;";
   result R = W.exec(sql);
-  cout << sql << endl;
   for (result::const_iterator res = R.begin(); res != R.end(); res++){
 
     int packageid = res[0].as<int>();
@@ -132,7 +132,7 @@ void packed_packages(connection * C, vector<int> & package_vec, string whx_posit
 
 
 bool packageExist(connection * C, string packageid){
-
+  lock_guard<mutex> lock(c_mutex);
   work W(*C);
   string sql = "SELECT COUNT(*) FROM \"upsApp_package\" WHERE \"packageId\" = " + W.quote(packageid) + " ;";
   result R = W.exec(sql);
@@ -147,7 +147,7 @@ bool packageExist(connection * C, string packageid){
             
 
 bool isExist(connection * C, string username){
-
+  lock_guard<mutex> lock(c_mutex);
   work W(*C);
   string sql = "SELECT COUNT(*) FROM auth_user WHERE username = " + W.quote(username) + " ;";
   result R = W.exec(sql);
@@ -161,6 +161,7 @@ bool isExist(connection * C, string username){
 
 
 void insert_into_order_table(connection * C, string orderid, string package_num_id){
+  lock_guard<mutex> lock(c_mutex);
   work W(*C);
   string sql;
   sql = "INSERT INTO \"upsApp_order_table\"(order_id, package_num_id)  VALUES ( " + W.quote(orderid) + " ," + W.quote(package_num_id) + " );";
@@ -170,7 +171,7 @@ void insert_into_order_table(connection * C, string orderid, string package_num_
 }
 
 string get_package_id_for_order(connection * C, string order_id){
-
+  lock_guard<mutex> lock(c_mutex);
   work W(*C);
   string sql;
   sql = "SELECT package_num_id  FROM \"upsApp_order_table\" WHERE order_id  = " + W.quote(order_id) + " ;";
@@ -183,6 +184,7 @@ string get_package_id_for_order(connection * C, string order_id){
 }
 
 string get_order_id_for_package(connection * C, string package_id){
+  lock_guard<mutex> lock(c_mutex);
   work W(*C);
   string sql;
   sql = "SELECT order_id  FROM \"upsApp_order_table\" WHERE package_num_id  = " + W.quote(package_id) + " ;";
@@ -195,7 +197,7 @@ string get_order_id_for_package(connection * C, string package_id){
 
 
 void update_location_of_package(connection * C, string x_position, string y_position, string packageid){
-
+  lock_guard<mutex> lock(c_mutex);
   work W(*C);;
   string sql;
   sql = "UPDATE \"upsApp_package\" SET \"xPosition\"  = " + W.quote(x_position) + " , \"yPosition\" = " + W.quote(y_position) +  " WHERE \"packageId\" = " + W.quote(packageid) + " ;";
@@ -208,7 +210,7 @@ void update_location_of_package(connection * C, string x_position, string y_posi
 
 
 void update_truck_field_of_package(connection * C, string packageid, string value){
-
+  lock_guard<mutex> lock(c_mutex);
   work W(*C);;
   string sql;
   sql = "UPDATE \"upsApp_package\" SET truck_id = " + W.quote(value) + " WHERE \"packageId\" = " + W.quote(packageid) + " ;";
@@ -218,7 +220,7 @@ void update_truck_field_of_package(connection * C, string packageid, string valu
 }
 
 void update_acked_of_seqnum(connection * C, string seq,  bool val){
-
+  lock_guard<mutex> lock(c_mutex);
   work W(*C);;
   string sql;
   sql = "UPDATE \"upsApp_sequence_number\" SET ackedornot = " + W.quote(val) + " WHERE sequence_id = " + W.quote(seq) + " ;";
@@ -230,6 +232,7 @@ void update_acked_of_seqnum(connection * C, string seq,  bool val){
 
 
 bool get_seqnum_acked_or_not(connection * C, string seqnum){
+  lock_guard<mutex> lock(c_mutex);
  work W(*C);;
  string sql;
  sql = "SELECT ackedornot FROM  \"upsApp_sequence_number\"  WHERE sequence_id = " + W.quote(seqnum) + " ;";
@@ -243,7 +246,7 @@ bool get_seqnum_acked_or_not(connection * C, string seqnum){
 
 
 string get_truck_id_for_a_particular_package(connection * C, string packageid){
-
+  lock_guard<mutex> lock(c_mutex);
   work W(*C);;
   string sql;
   sql = "SELECT truck_id  FROM \"upsApp_package\" WHERE \"packageId\" = " + W.quote(packageid) + " ;";
@@ -254,6 +257,7 @@ string get_truck_id_for_a_particular_package(connection * C, string packageid){
 }
 
 string get_xposition_of_a_package(connection * C, string packageid){
+  lock_guard<mutex> lock(c_mutex);
   work W(*C);
   string sql;
   sql = "SELECT \"xPosition\"  FROM \"upsApp_package\" WHERE \"packageId\" = " + W.quote(packageid) + " ;";
@@ -266,6 +270,7 @@ string get_xposition_of_a_package(connection * C, string packageid){
 
 
 string get_yposition_of_a_package(connection * C, string packageid){
+  lock_guard<mutex> lock(c_mutex);
   work W(*C);
   string sql;
   sql = "SELECT \"yPosition\"  FROM \"upsApp_package\" WHERE \"packageId\" = " + W.quote(packageid) + " ;";
@@ -276,6 +281,7 @@ string get_yposition_of_a_package(connection * C, string packageid){
 }
 
 string get_package_status(connection * C, string packageid){
+  lock_guard<mutex> lock(c_mutex);
   work W(*C);
   string sql;
   sql = "SELECT status  FROM \"upsApp_package\" WHERE \"packageId\" = " + W.quote(packageid) + " ;";
@@ -286,6 +292,7 @@ string get_package_status(connection * C, string packageid){
 }
 
 string get_item_description(connection * C, string packageid){
+  lock_guard<mutex> lock(c_mutex);
   work W(*C);
   string sql;
   sql = "SELECT item  FROM \"upsApp_package\" WHERE \"packageId\" = " + W.quote(packageid) + " ;";
@@ -297,6 +304,7 @@ string get_item_description(connection * C, string packageid){
 }
 
 string get_warehouse_id_of_package(connection * C, string packageid){
+  lock_guard<mutex> lock(c_mutex);
   work W(*C);
   string sql;
   sql = "SELECT whid  FROM \"upsApp_package\" WHERE \"packageId\" = " + W.quote(packageid) + " ;";
@@ -307,6 +315,7 @@ string get_warehouse_id_of_package(connection * C, string packageid){
 }
 
 string get_warehouse_xposition(connection * C, string packageid){
+  lock_guard<mutex> lock(c_mutex);
   work W(*C);
   string sql;
   sql = "SELECT \"whxPosition\"  FROM \"upsApp_package\" WHERE \"packageId\" = " + W.quote(packageid) + " ;";
@@ -318,6 +327,7 @@ string get_warehouse_xposition(connection * C, string packageid){
 
 
 string get_warehouse_yposition(connection * C, string packageid){
+  lock_guard<mutex> lock(c_mutex);
   work W(*C);
   string sql;
   sql = "SELECT \"whyPosition\"  FROM \"upsApp_package\" WHERE \"packageId\" = " + W.quote(packageid) + " ;";
@@ -330,6 +340,7 @@ string get_warehouse_yposition(connection * C, string packageid){
 
 
 string get_owner_id_of_package(connection * C, string packageid){
+  lock_guard<mutex> lock(c_mutex);
   work W(*C);
   string sql;
   sql = "SELECT owner_id  FROM \"upsApp_package\" WHERE \"packageId\" = " + W.quote(packageid) + " ;";
@@ -341,7 +352,7 @@ string get_owner_id_of_package(connection * C, string packageid){
 
 
 string get_truck_id_for_a_particular_status(connection * C, string status){
-
+  lock_guard<mutex> lock(c_mutex);
   work W(*C);
   string sql;
   sql = "SELECT \"truckId\" FROM \"upsApp_truck\" WHERE STATUS = " + W.quote(status) + " ORDER BY \"truckId\" ASC ;";
@@ -358,6 +369,7 @@ string get_truck_id_for_a_particular_status(connection * C, string status){
 
 
 string get_username(connection *C , string packageid){
+  lock_guard<mutex> lock(c_mutex);
   work W(*C);
   string sql = "SELECT owner_id FROM \"upsApp_package\" WHERE \"packageId\" = " + W.quote(packageid) + " ;";
   result R = W.exec(sql);
@@ -373,6 +385,7 @@ string get_username(connection *C , string packageid){
 
 
 void insert_sequence_num(connection * C, string seq_num, string ackedornot){
+  lock_guard<mutex> lock(c_mutex);
 work W(*C);
 string sql = "INSERT INTO \"upsApp_sequence_number\"(sequence_id, ackedornot) VALUES (" + W\
   .quote(seq_num) + " , " + W.quote(ackedornot) + ");";
@@ -382,6 +395,7 @@ W.commit();
 
 
 bool check_seq_num_exists(connection * C, string seq_num){
+  lock_guard<mutex> lock(c_mutex);
   work W(*C);
 string sql = "SELECT * FROM \"upsApp_sequence_number\" WHERE sequence_id = " + \
 W.quote(seq_num) + " ; ";
@@ -398,6 +412,7 @@ result::const_iterator res = R.begin();
                                                                                                                                               
 
 void update_package_destination(connection * C, string packageid, string new_x, string new_y){
+  lock_guard<mutex> lock(c_mutex);
 string sql;
 work W(*C);
 sql = "UPDATE \"upsApp_package\" SET \"xPosition\" =  " + W.quote(new_x) + ", \"yPosition\" = " + W.quote(new_y) + " WHERE \"packageId\" = " +W.quote(packageid) + " ;";
@@ -406,6 +421,7 @@ W.commit();
 }
 
 void update_package_warehouse_location_and_id(connection * C, string warehouse_id, string warehouse_x, string warehouse_y, string packageid){
+  lock_guard<mutex> lock(c_mutex);
 string sql;
 work W(*C);
 sql = "UPDATE \"upsApp_package\" SET WHID = " + W.quote(warehouse_id) + ", \"whxPosition\" =  " + W.quote(warehouse_x) + ", \"whyPosition\" = " + W.quote(warehouse_y) + " WHERE \"packageId\" = " + W.quote(packageid) + " ;";
@@ -415,21 +431,23 @@ W.commit();
 
 
 void insert_package(connection * C, string packageid, string username, string truck_id, string item, string status = "DG", string warehouse_id = "0", string warehouse_x = "0" , string warehouse_y = "0", string x_position = "0", string y_position = "0", string destination_update = "False"){
-
-  string sql;
+  lock_guard<mutex> lock(c_mutex);
   string owner_id;
+  if (!username.empty()) {
+     owner_id = get_owner_id_from_username(C, username);
+  }
+  string sql;
+ 
   work W(*C);
-
   if(!username.empty()){
-  owner_id = get_owner_id_from_username(C, username);
+    cout << "empty()" << endl;
+  cout << "owner_id in sql " << owner_id << endl;
   string space = " , ";
   sql = "INSERT INTO \"upsApp_package\"(\"packageId\", owner_id, truck_id, status, item, whid, \"whxPosition\",\"whyPosition\", \"xPosition\", \"yPosition\", \"destRequiredUpdated\" ) VALUES(" + W.quote(packageid) + " , " +  W.quote(owner_id) +  " , " + W.quote(truck_id) + " , " + W.quote(status) + " , " +  W.quote(item) + " , " +  W.quote(warehouse_id) + " , " +  W.quote(warehouse_x) + " , " + W.quote(warehouse_y) + " , " + W.quote(x_position) + " , " +  W.quote(y_position) + " , " +  W.quote(destination_update) + ");";
-
+  cout << sql << endl;
   }
   else{
-    
       sql = "INSERT INTO \"upsApp_package\"(\"packageId\",truck_id, status, item, whid, \"whxPosition\",\"whyPosition\", \"xPosition\", \"yPosition\", \"destRequiredUpdated\" ) VALUES(" + W.quote(packageid) +  " , " + W.quote(truck_id) + " , " + W.quote(status) + " , " +  W.quote(item) + " , " +  W.quote(warehouse_id) + " , " +  W.quote(warehouse_x) + " , " + W.quote(warehouse_y) + " , " + W.quote(x_position) + " , " +  W.quote(y_position) + " , " +  W.quote(destination_update) + ");";
-
   }
     try{
     W.exec(sql);
@@ -444,6 +462,7 @@ void insert_package(connection * C, string packageid, string username, string tr
 
 
 void update_status_of_package (connection * C, string packageid, string new_status){
+  lock_guard<mutex> lock(c_mutex);
  string sql;
  work W(*C);
  sql = "UPDATE \"upsApp_package\" SET STATUS = " + W.quote(new_status) + " WHERE \"packageId\" = " + W.quote(packageid) + " ;";
@@ -454,6 +473,7 @@ void update_status_of_package (connection * C, string packageid, string new_stat
 
 //Complete truck related functions
 void insert_truck(connection * C, string truckid, string status){
+  lock_guard<mutex> lock(c_mutex);
   string sql;
   work W(*C);
   sql = "INSERT INTO \"upsApp_truck\"(\"truckId\",status) VALUES(" + W.quote(truckid) + " ,  " + W.quote(status) + ");";
@@ -471,6 +491,7 @@ void insert_truck(connection * C, string truckid, string status){
 
 
 void update_truck_status(connection * C, string truck_id, string new_status){
+  lock_guard<mutex> lock(c_mutex);
   string sql;
   work W(*C);
   sql = "UPDATE \"upsApp_truck\" SET STATUS = " + W.quote(new_status) + " WHERE \"truckId\" = " + W.quote(truck_id)+ " ;";
@@ -479,6 +500,7 @@ void update_truck_status(connection * C, string truck_id, string new_status){
 }
 
  string get_truck_status(connection * C, string truckid){
+   lock_guard<mutex> lock(c_mutex);
  string sql;
  work W(*C);
  sql = "SELECT STATUS FROM \"upsApp_truck\" WHERE \"truckId\" = " + W.quote(truckid) + " ; ";
@@ -504,7 +526,7 @@ void update_truck_status(connection * C, string truck_id, string new_status){
 
 
 void clear_all_tables(connection * C){
-
+  lock_guard<mutex> lock(c_mutex);
   work W(*C);
     string sql = "TRUNCATE \"upsApp_sequence_number\", \"upsApp_order_table\",  \"upsApp_current_world\", \"upsApp_truck\", \"upsApp_package\", \"auth_user\" CASCADE;";
     W.exec(sql);

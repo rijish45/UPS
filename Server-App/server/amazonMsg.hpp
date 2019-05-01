@@ -2,8 +2,8 @@
 #define __AMAZONMSG__ 
 
 #define LISTEN_PORT "44444"
-// #define CONNECT_HOST "vcm-5947.vm.duke.edu"
-#define CONNECT_HOST "10.197.188.30"
+#define CONNECT_HOST "vcm-5947.vm.duke.edu"
+// #define CONNECT_HOST "vcm-8273.vm.duke.edu"
 #define CONNECT_PORT "22222"
 
 #include "UA.pb.h"

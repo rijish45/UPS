@@ -10,8 +10,8 @@
       <li> Package Detail: <strong>{{ package.item }}</strong> </li>
       <li> Status: <strong>{{ package.get_status_display }}</strong> </li>
       <li> Destination: <strong>({{ package.xPosition }},{{package.yPosition}})</strong></li>
-      {% if package.get_status_display != 'delivering' %}
-        <li><a href="/upsApp/{{ package.packageId }}/update">Update destination</a></li>
+      {% if package.get_status_display != 'delivered' %}
+        <li><a href="{{ package.packageId }}/update">Update destination</a></li>
       {% else %}
         <li> Out for Delivery</li>
       {% endif %}

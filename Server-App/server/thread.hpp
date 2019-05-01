@@ -2,7 +2,8 @@
 #define __THREAD__
 
 // PORT
-#define WORLD_HOST "vcm-8131.vm.duke.edu"
+#define WORLD_HOST "vcm-8273.vm.duke.edu"
+// #define WORLD_HOST "vcm-5947.vm.duke.edu"
 #define WORLD_PORT "12345"
 #define AMAZON_HOST "vcm-7975.vm.duke.edu"
 // #define AMAZON_PORT "22222"

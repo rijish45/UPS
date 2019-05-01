@@ -11,11 +11,11 @@ services:
       - pgdata:/var/lib/postgresql/data
   front-end:
     build: ./Django-App/web-app
-    command: bash -c "python3 manage.py makemigrations upsApp && python3 manage.py migrate && python3 manage.py runserver 0.0.0.0:7999"
+    command: bash -c "python3 manage.py makemigrations upsApp && python3 manage.py migrate && python3 manage.py runserver 0.0.0.0:8000"
     volumes:
       - "./Django-App/web-app:/serverDir"
     ports:
-      - "7999:7999"
+      - "8000:8000"
     depends_on:
       - db
     links:

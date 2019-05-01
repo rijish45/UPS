@@ -53,8 +53,9 @@ void setUpEnvironment() {
     if (i == TIME_RETRY) {
       perror("FAILED TO CONNECT TO AMAZON");
       exit(EXIT_FAILURE);
-    } 
+    }
     if (amazon->buildConnection(worldId)) {
+      cout << "connected(amazon)!!!!!";
       break;
     }
   }
@@ -79,17 +80,20 @@ void setUpEnvironment() {
 
   // set up DB Connection here
   
-  // wait 
+  // wait
+  cout << "accept" << endl;
   amazon->acceptConnection();
+  // cout << "HIHIHIHI" << endl;
   // drop_all_tables( C);
 }
 
 void initializeStatusMap() {
-  truckStatus["idle"] = "ID";
-  truckStatus["traveling"] = "TR";
-  truckStatus["arrive warehouse"] = "AW";
-  truckStatus["loading"] = "LO";
-  truckStatus["delivering"] = "DE";
+  truckStatus["IDLE"] = "ID";
+  truckStatus["TRAVELING"] = "TR";
+  // arrive  warehouse
+  truckStatus["ARRIVE WAREHOUSE"] = "AW";
+  truckStatus["LOADING"] = "LO";
+  truckStatus["DELIVERING"] = "DE";
   packageStatus["loading"] = "LG";
   packageStatus["loaded"] = "LD";
   packageStatus["delivering"] = "DG";
@@ -116,28 +120,28 @@ void iterateUResponses(UResponses & response) {
     for (int i = 0; i < response.completions_size(); i++) {
       // debug
       cout << "completions sent back " << endl;
-      cout << response.completions(i).truckid() << endl;
-      cout << response.completions(i).x() << endl;
-      cout << response.completions(i).y() << endl;
-      cout << response.completions(i).status() << endl;
-      cout << response.completions(i).seqnum() << endl; 
-      
+      cout << "truckId:" << response.completions(i).truckid() << endl;
+      cout << "x:" << response.completions(i).x() << endl;
+      cout << "y:" << response.completions(i).y() << endl;
+      cout << "status:" << response.completions(i).status() << endl;
+      cout << "seqnum:" << response.completions(i).seqnum() << endl; 
+      cout << response.DebugString() << endl;
       // update db and send ack message
       world->sendAck(response.completions(i).seqnum());
       string thisTruckStatus = response.completions(i).status();
       int thisTruckId = response.completions(i).truckid();
-      cout << "--------------------------" << endl;
-      cout << thisTruckStatus << endl;
+      // cout << "--------------------------" << endl;
+      // cout << thisTruckStatus << endl;
       // ARRIVE WAREHOUSE
       if (thisTruckStatus == "ARRIVE WAREHOUSE") {
-	cout << "--------------------------" << endl;
+	// cout << "--------------------------" << endl;
 	vector<int> packed;
 	packed_packages(C,  packed, to_string(response.completions(i).x()), to_string(response.completions(i).y()), to_string(thisTruckId));
-	cout << "--------------------------" << endl;
-	cout << "packed size " << packed.size() << endl;
-	cout << response.completions(i).x() << endl;
-	cout << response.completions(i).y() << endl;
-	cout << response.completions(i).truckid() << endl;
+	// cout << "--------------------------" << endl;
+	// cout << "packed size " << packed.size() << endl;
+	// cout << response.completions(i).x() << endl;
+	// cout << response.completions(i).y() << endl;
+	// cout << response.completions(i).truckid() << endl;
 	lock_guard<mutex> lock(mtx);
 	for (unsigned i = 0; i < packed.size(); i++) {
 	  // int tempPackageId = get_order_id_for_package(C, packed[i]);
@@ -161,11 +165,11 @@ void iterateUResponses(UResponses & response) {
       // update
       // update(packageid, status);
       cout << "delievered sent back " << endl;
-      cout << response.delivered(i).truckid() << endl;
-      cout << response.delivered(i).packageid() << endl;
-      cout << response.delivered(i).seqnum() << endl;
+      cout << "truckId:" << response.delivered(i).truckid() << endl;
+      cout << "packageId:" << response.delivered(i).packageid() << endl;
+      cout << "seqnum:" << response.delivered(i).seqnum() << endl;
       // todo : function(packageId) // set the foreign key(points to truck) of the packageid to null
-      update_status_of_package(C, to_string(response.delivered(i).packageid()), PACKAGE_LOADING);
+      update_status_of_package(C, to_string(response.delivered(i).packageid()), PACKAGE_DELIVERED);
       world->sendAck(response.delivered(i).seqnum());
       // send amazon
       lock_guard<mutex> lck(mtx);
@@ -251,13 +255,15 @@ void iterateA2URequest(A2URequest & req) {
      
       // create the package in local database and assign the package to a truck
       if (req.pickup(i).has_upsaccount() && !isExist(C, account)) {
-	amazon->sendError("The user accout does not exist", req.delivery(i).seqnum(), mySeqNum);
+	cout << "The user account does not exit" << endl;
+	amazon->sendError("account not exist", req.delivery(i).seqnum(), mySeqNum);
 	insert_sequence_num(C, to_string(mySeqNum), "False");
 	++mySeqNum;
 	continue;
       }
       int truckIdAssigned = countTruck % NUM_TRUCKS;
       ++countTruck;
+      cout << account << endl;
       insert_package(C, to_string(to_string(req.pickup(i).orderid())), account, to_string(truckIdAssigned), req.pickup(i).productname(),
 		     PACKAGE_PACKED, to_string(req.pickup(i).wh_id()), to_string(req.pickup(i).wh_x()),
 		     to_string(req.pickup(i).wh_y()), to_string(req.pickup(i).dest_x()), to_string(req.pickup(i).dest_y()), "False");
@@ -313,12 +319,12 @@ void iterateA2URequest(A2URequest & req) {
       int x = stoi(get_xposition_of_a_package(C, to_string(req.delivery(i).tracknum())));
       int y = stoi(get_yposition_of_a_package(C, to_string(req.delivery(i).tracknum())));
       // worldMsg::goDeliver(int packageid, int x, int y, int truckid, int seqnum)
-      cout << "-命运---------------" << endl;
-      cout << req.delivery(i).tracknum() << endl;
-      cout << x << endl;
-      cout << y << endl;
-      cout << stoi(tempId) << endl;
-      cout << mySeqNum << endl;
+      // cout << "-命运---------------" << endl;
+      // cout << req.delivery(i).tracknum() << endl;
+      // cout << x << endl;
+      // cout << y << endl;
+      // cout << stoi(tempId) << endl;
+      // cout << mySeqNum << endl;
       world->goDeliver(req.delivery(i).tracknum(), x, y, stoi(tempId), mySeqNum);
       insert_sequence_num(C, to_string(mySeqNum), "False");
       ++mySeqNum;
@@ -328,8 +334,9 @@ void iterateA2URequest(A2URequest & req) {
   
 void updateAddress() {
   amazonMsg * amazon = amazonMsg::getInstance();
+  worldMsg * world = worldMsg::getInstance(WORLD_HOST, WORLD_PORT);
   while (true) {
-      this_thread::sleep_for(chrono::milliseconds(3000)); 
+    //this_thread::sleep_for(chrono::milliseconds(3000)); 
       vector<vector<string>> my_vec(1000);
       // package id, x, y
       get_parameter_based_on_dest(C, my_vec); // handled required to updated
@@ -339,9 +346,21 @@ void updateAddress() {
       lock_guard<mutex> lck(mtx);
       for (unsigned i = 0; i < my_vec.size(); i++) {
 	for (int j = 0; j < 3; j++) {
-	  amazon->updateDestination(mySeqNum, stoi(my_vec[i][0]), stoi(my_vec[i][1]), stoi(my_vec[i][2])); 
+	  //world->updateDestination(mySeqNum, stoi(my_vec[i][0]), stoi(my_vec[i][1]), stoi(my_vec[i][2]));
+	  int findTruckId = stoi(get_truck_id_for_a_particular_package(C, my_vec[i][0]));
+	  string curStatus = get_package_status(C, my_vec[i][0]);
+	  if (curStatus == "DD" ) {
+	    cout << "Already Delivered : Update Address Failed";
+	    continue;
+	  }
+	  if (curStatus == "DG") {
+	    world->goDeliver(stoi(my_vec[i][0]), stoi(my_vec[i][1]), stoi(my_vec[i][2]), findTruckId, mySeqNum);
+	    insert_sequence_num(C, to_string(mySeqNum), "False");
+	    ++mySeqNum;
+	  }
+	  amazon->updateDestination(mySeqNum, stoi(my_vec[i][0]), stoi(my_vec[i][1]), stoi(my_vec[i][2]));
 	  insert_sequence_num(C, to_string(mySeqNum), "False");
-	  ++mySeqNum;      
+	  ++mySeqNum;
 	}
       }
   }
